@@ -1,0 +1,65 @@
+import javax.swing.*;
+
+public class LoginScreen {
+
+    public static void main(String[] args) {
+        new LoginScreen().createLoginUI();
+    }
+
+    public void createLoginUI() {
+        JFrame frame = new JFrame("Login");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(300, 250);
+        frame.setLayout(null);
+
+        JLabel nameLabel = new JLabel("Name:");
+        nameLabel.setBounds(30, 20, 80, 20);
+        JTextField nameField = new JTextField();
+        nameField.setBounds(30, 40, 220, 25);
+
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setBounds(30, 70, 80, 20);
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setBounds(30, 90, 220, 25);
+
+        JCheckBox showPasswordCheckbox = new JCheckBox("Show Password");
+        showPasswordCheckbox.setBounds(30, 120, 150, 20);
+        showPasswordCheckbox.addActionListener(e -> {
+            if (showPasswordCheckbox.isSelected()) {
+                passwordField.setEchoChar((char) 0);
+            } else {
+                passwordField.setEchoChar('•');
+            }
+        });
+
+        JButton loginButton = new JButton("Login");
+        loginButton.setBounds(30, 150, 100, 30);
+
+        // Set the correct password here
+        String correctPassword = "12345";
+
+        loginButton.addActionListener(e -> {
+            String name = nameField.getText();
+            String inputPassword = new String(passwordField.getPassword());
+
+            if (inputPassword.equals(correctPassword)) {
+                BookshopUI bookshopUI = new BookshopUI();
+                bookshopUI.open();
+                frame.dispose();
+            } else {
+                JOptionPane.showMessageDialog(frame, "Incorrect password!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        passwordField.setEchoChar('•');
+
+        frame.add(nameLabel);
+        frame.add(nameField);
+        frame.add(passwordLabel);
+        frame.add(passwordField);
+        frame.add(showPasswordCheckbox);
+        frame.add(loginButton);
+
+        frame.setVisible(true);
+    }
+}
