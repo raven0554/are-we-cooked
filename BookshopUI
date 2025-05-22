@@ -1,0 +1,279 @@
+import javax.swing.*; 
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
+public class BookshopUI {
+    static DefaultListModel<String> bookListModel = new DefaultListModel<>();
+    static JList<String> bookList = new JList<>(bookListModel);
+    static JTextField titleField = new JTextField();
+    static JTextField priceField = new JTextField();
+    static JTextField searchField = new JTextField();
+    static JTextArea receiptArea = new JTextArea();
+
+   
+    static java.util.List<String[]> books = new ArrayList<>(Arrays.asList(
+        new String[]{"Java Programming", "25.0"},
+        new String[]{"Python Basics", "20.0"},
+        new String[]{"Web Development", "30.0"},
+        new String[]{"Data Structures", "28.0"},
+        new String[]{"Algorithms", "35.0"},
+        new String[]{"Database Systems", "22.0"},
+        new String[]{"Networking", "18.0"},
+        new String[]{"Operating Systems", "32.0"},
+        new String[]{"Machine Learning", "40.0"},
+        new String[]{"Artificial Intelligence", "45.0"},
+        new String[]{"Cyber Security", "38.0"},
+        new String[]{"Cloud Computing", "36.0"},
+        new String[]{"Mobile App Dev", "29.0"},
+        new String[]{"Game Dev Guide", "26.0"},
+        new String[]{"Software Engineering", "27.0"}
+    ));
+
+    static class BookItem {
+        String title;
+        double price;
+        JSpinner quantity;
+        JCheckBox purchase;
+        JLabel titleLabel;
+        JLabel priceLabel;
+        JPanel itemPanel;
+
+        BookItem(String title, double price) {
+            this.title = title;
+            this.price = price;
+            this.quantity = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
+            this.purchase = new JCheckBox("Purchase");
+            this.titleLabel = new JLabel(title, SwingConstants.CENTER);
+            this.priceLabel = new JLabel("Price: $" + price);
+            this.itemPanel = new JPanel();
+            this.itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
+            this.itemPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            this.itemPanel.add(titleLabel);
+            this.itemPanel.add(priceLabel);
+            this.itemPanel.add(new JLabel("Quantity:"));
+            this.itemPanel.add(quantity);
+            this.itemPanel.add(purchase);
+        }
+
+        void updateUI(String newTitle, String newPrice) {
+            this.title = newTitle;
+            this.price = Double.parseDouble(newPrice);
+            titleLabel.setText(newTitle);
+            priceLabel.setText("Price: $" + newPrice);
+        }
+    }
+
+    private java.util.List<BookItem> bookItems = new ArrayList<>();
+    private JPanel menuPanel; 
+
+    public void open() {
+        JFrame frame = new JFrame("Sean Del Bookshop");
+        frame.setSize(1200, 700);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(null);
+
+        JLabel title = new JLabel("Sean Del Bookshop", SwingConstants.CENTER);
+        title.setFont(new Font("Serif", Font.BOLD, 28));
+        title.setBounds(20, 10, 400, 40);
+        frame.add(title);
+
+        menuPanel = new JPanel();
+        menuPanel.setLayout(new GridLayout(0, 5, 10, 10)); 
+        menuPanel.setBounds(20, 60, 880, 500);
+        frame.add(menuPanel);
+
+        loadBooksUI();
+
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(null);
+        rightPanel.setBounds(920, 60, 250, 500);
+
+        receiptArea.setBounds(10, 10, 230, 150);
+        rightPanel.add(receiptArea);
+
+        JLabel nameLabel = new JLabel("Book Title:");
+        nameLabel.setBounds(10, 170, 100, 20);
+        titleField.setBounds(110, 170, 130, 20);
+
+        JLabel priceLabel = new JLabel("Price:");
+        priceLabel.setBounds(10, 200, 100, 20);
+        priceField.setBounds(110, 200, 130, 20);
+
+        JButton addButton = new JButton("Add");
+        addButton.setBounds(10, 230, 70, 25);
+        JButton updateButton = new JButton("Update");
+        updateButton.setBounds(90, 230, 80, 25);
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.setBounds(180, 230, 80, 25);
+
+        JScrollPane listScroll = new JScrollPane(bookList);
+        listScroll.setBounds(10, 270, 230, 100);
+
+        JLabel searchLabel = new JLabel("Search:");
+        searchLabel.setBounds(10, 380, 100, 20);
+        searchField.setBounds(70, 380, 170, 20);
+
+        bookList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && bookList.getSelectedValue() != null) {
+                String[] parts = bookList.getSelectedValue().split(" - ");
+                if (parts.length == 2) {
+                    titleField.setText(parts[0]);
+                    priceField.setText(parts[1]);
+                }
+            }
+        });
+
+        addButton.addActionListener(e -> {
+            String titleName = titleField.getText().trim();
+            String price = priceField.getText().trim();
+            if (!titleName.isEmpty() && !price.isEmpty()) {
+                
+                books.add(new String[]{titleName, price});
+                
+                bookListModel.addElement(titleName + " - " + price);
+                
+                BookItem newItem = new BookItem(titleName, Double.parseDouble(price));
+                bookItems.add(newItem);
+                menuPanel.add(newItem.itemPanel);
+                menuPanel.revalidate();
+                menuPanel.repaint();
+
+                titleField.setText("");
+                priceField.setText("");
+            }
+        });
+
+        updateButton.addActionListener(e -> {
+            int selectedIndex = bookList.getSelectedIndex();
+            if (selectedIndex != -1) {
+                String titleName = titleField.getText().trim();
+                String price = priceField.getText().trim();
+                if (!titleName.isEmpty() && !price.isEmpty()) {
+                    
+                    books.get(selectedIndex)[0] = titleName;
+                    books.get(selectedIndex)[1] = price;
+
+                   
+                    bookListModel.set(selectedIndex, titleName + " - " + price);
+
+                    
+                    BookItem itemToUpdate = bookItems.get(selectedIndex);
+                    itemToUpdate.updateUI(titleName, price);
+
+                    titleField.setText("");
+                    priceField.setText("");
+                }
+            }
+        });
+
+        deleteButton.addActionListener(e -> {
+            int selectedIndex = bookList.getSelectedIndex();
+            if (selectedIndex != -1) {
+                
+                books.remove(selectedIndex);
+                bookListModel.remove(selectedIndex);
+
+                
+                BookItem removedItem = bookItems.remove(selectedIndex);
+                menuPanel.remove(removedItem.itemPanel);
+
+                menuPanel.revalidate();
+                menuPanel.repaint();
+
+                titleField.setText("");
+                priceField.setText("");
+            }
+        });
+
+        searchField.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent e) {
+                String filter = searchField.getText().toLowerCase();
+                bookList.clearSelection();
+                for (int i = 0; i < bookListModel.size(); i++) {
+                    if (bookListModel.get(i).toLowerCase().contains(filter)) {
+                        bookList.setSelectedIndex(i);
+                        bookList.ensureIndexIsVisible(i);
+                        break;
+                    }
+                }
+            }
+        });
+
+        rightPanel.add(nameLabel);
+        rightPanel.add(titleField);
+        rightPanel.add(priceLabel);
+        rightPanel.add(priceField);
+        rightPanel.add(addButton);
+        rightPanel.add(updateButton);
+        rightPanel.add(deleteButton);
+        rightPanel.add(listScroll);
+        rightPanel.add(searchLabel);
+        rightPanel.add(searchField);
+
+        frame.add(rightPanel);
+
+        JButton receiptBtn = new JButton("Receipt");
+        receiptBtn.setBounds(20, 580, 100, 40);
+        JButton resetBtn = new JButton("Reset");
+        resetBtn.setBounds(140, 580, 100, 40);
+        JButton exitBtn = new JButton("Exit");
+        exitBtn.setBounds(260, 580, 100, 40);
+
+        exitBtn.addActionListener(e -> System.exit(0));
+
+        resetBtn.addActionListener(e -> {
+            titleField.setText("");
+            priceField.setText("");
+            searchField.setText("");
+            bookList.clearSelection();
+            for (BookItem item : bookItems) {
+                item.purchase.setSelected(false);
+                item.quantity.setValue(0);
+            }
+            receiptArea.setText("");
+        });
+
+        receiptBtn.addActionListener(e -> {
+            StringBuilder receipt = new StringBuilder("Receipt:\n");
+            double total = 0;
+            for (BookItem item : bookItems) {
+                if (item.purchase.isSelected() && (int) item.quantity.getValue() > 0) {
+                    double subtotal = item.price * (int) item.quantity.getValue();
+                    receipt.append(item.title).append(" x ")
+                           .append(item.quantity.getValue()).append(" = $")
+                           .append(String.format("%.2f", subtotal)).append("\n");
+                    total += subtotal;
+                }
+            }
+            receipt.append("\nTotal: $").append(String.format("%.2f", total));
+            receiptArea.setText(receipt.toString());
+        });
+
+        frame.add(receiptBtn);
+        frame.add(resetBtn);
+        frame.add(exitBtn);
+
+        frame.setVisible(true);
+    }
+
+    private void loadBooksUI() {
+        bookListModel.clear();
+        bookItems.clear();
+        menuPanel.removeAll();
+
+        for (String[] entry : books) {
+            BookItem bookItem = new BookItem(entry[0], Double.parseDouble(entry[1]));
+            bookItems.add(bookItem);
+            menuPanel.add(bookItem.itemPanel);
+            bookListModel.addElement(entry[0] + " - " + entry[1]);
+        }
+
+        menuPanel.revalidate();
+        menuPanel.repaint();
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new BookshopUI().open());
+    }
+}
